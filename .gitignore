@@ -38,5 +38,9 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
+# zip archives
+*.zip
+
 # Local Netlify folder
 .netlify
+
