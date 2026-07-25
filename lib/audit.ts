@@ -217,10 +217,9 @@ export async function auditUrl(rawUrl: string): Promise<AuditReport> {
     const response = await fetch(targetUrl, {
       signal: controller.signal,
       headers: {
-        'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
+        'User-Agent': 'Mozilla/5.0 (compatible; PagePulseBot/1.0; +https://github.com/amxn1/page-pulse1) Googlebot/2.1',
         'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-        'Accept-Encoding': 'gzip, deflate, br',
-        'Connection': 'keep-alive',
+        'Accept-Language': 'en-US,en;q=0.9',
       },
       redirect: 'follow',
     });
