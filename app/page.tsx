@@ -1,7 +1,19 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
+import dynamic from 'next/dynamic';
 import { Button } from '@/components/ui/button';
+
+const TrafficGlobe = dynamic(() => import('@/components/traffic-globe'), {
+  ssr: false,
+  loading: () => (
+    <div className="flex h-[420px] items-center justify-center rounded-2xl border border-zinc-800 bg-zinc-950">
+      <span className="text-xs font-semibold uppercase tracking-wider text-zinc-500 animate-pulse">
+        Loading 3D Globe...
+      </span>
+    </div>
+  ),
+});
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import {
@@ -455,6 +467,26 @@ export default function Home() {
                     </CardContent>
                   </Card>
                 </div>
+
+                {/* Global Traffic Heatmap Globe */}
+                <Card className="bg-zinc-900/80 border-zinc-800">
+                  <CardHeader className="pb-3">
+                    <div className="flex items-center gap-2">
+                      <div className="p-2 rounded-xl bg-zinc-800 text-zinc-300">
+                        <Globe className="w-4 h-4" />
+                      </div>
+                      <div>
+                        <CardTitle className="text-sm text-zinc-200">Global Traffic Heatmap</CardTitle>
+                        <CardDescription className="text-zinc-400 text-xs">
+                          Estimated visitor distribution by country
+                        </CardDescription>
+                      </div>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <TrafficGlobe url={report.url} />
+                  </CardContent>
+                </Card>
               </>
             ) : (
               /* DEDICATED AUDIT FAILED CARD */
