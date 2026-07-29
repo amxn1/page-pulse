@@ -4,6 +4,9 @@ import React, { useMemo, useRef, useState } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
 import { OrbitControls, Html } from '@react-three/drei';
 import * as THREE from 'three';
+import { feature } from 'topojson-client';
+import type { Topology, GeometryCollection } from 'topojson-specification';
+import worldData from 'world-atlas/countries-110m.json';
 import { generateTrafficData, formatVisitors, type CountryTraffic } from '@/lib/traffic-data';
 
 const GLOBE_RADIUS = 2;
@@ -16,6 +19,44 @@ function latLngToVector3(lat: number, lng: number, radius: number): THREE.Vector
     -radius * Math.sin(phi) * Math.cos(theta),
     radius * Math.cos(phi),
     radius * Math.sin(phi) * Math.sin(theta)
+  );
+}
+
+/** Country border outlines drawn as line segments on the sphere surface */
+function CountryBorders() {
+  const geometry = useMemo(() => {
+    const topo = worldData as unknown as Topology<{ countries: GeometryCollection }>;
+    const countries = feature(topo, topo.objects.countries);
+    const positions: number[] = [];
+    const r = GLOBE_RADIUS + 0.006;
+
+    const addRing = (ring: number[][]) => {
+      for (let i = 0; i < ring.length - 1; i++) {
+        const a = latLngToVector3(ring[i][1], ring[i][0], r);
+        const b = latLngToVector3(ring[i + 1][1], ring[i + 1][0], r);
+        positions.push(a.x, a.y, a.z, b.x, b.y, b.z);
+      }
+    };
+
+    for (const f of countries.features) {
+      const geom = f.geometry;
+      if (!geom) continue;
+      if (geom.type === 'Polygon') {
+        for (const ring of geom.coordinates) addRing(ring);
+      } else if (geom.type === 'MultiPolygon') {
+        for (const polygon of geom.coordinates) for (const ring of polygon) addRing(ring);
+      }
+    }
+
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+    return geo;
+  }, []);
+
+  return (
+    <lineSegments geometry={geometry}>
+      <lineBasicMaterial color="#71717a" transparent opacity={0.55} />
+    </lineSegments>
   );
 }
 
@@ -108,8 +149,10 @@ function GlobeScene({ traffic }: { traffic: CountryTraffic[] }) {
         {/* Graticule wireframe */}
         <mesh>
           <sphereGeometry args={[GLOBE_RADIUS + 0.002, 36, 24]} />
-          <meshBasicMaterial color="#3f3f46" wireframe transparent opacity={0.22} />
+          <meshBasicMaterial color="#3f3f46" wireframe transparent opacity={0.1} />
         </mesh>
+        {/* Country border outlines */}
+        <CountryBorders />
         {/* Atmosphere glow */}
         <mesh>
           <sphereGeometry args={[GLOBE_RADIUS + 0.16, 64, 64]} />
