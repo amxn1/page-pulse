@@ -4,9 +4,7 @@ import React, { useMemo, useRef, useState } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
 import { OrbitControls, Html } from '@react-three/drei';
 import * as THREE from 'three';
-import { feature } from 'topojson-client';
-import type { Topology, GeometryCollection } from 'topojson-specification';
-import worldData from 'world-atlas/countries-110m.json';
+import worldData from '@/lib/world-countries.json';
 import { generateTrafficData, formatVisitors, type CountryTraffic } from '@/lib/traffic-data';
 
 const GLOBE_RADIUS = 2;
@@ -25,8 +23,11 @@ function latLngToVector3(lat: number, lng: number, radius: number): THREE.Vector
 /** Country border outlines drawn as line segments on the sphere surface */
 function CountryBorders() {
   const geometry = useMemo(() => {
-    const topo = worldData as unknown as Topology<{ countries: GeometryCollection }>;
-    const countries = feature(topo, topo.objects.countries);
+    const countries = worldData as unknown as {
+      features: Array<{
+        geometry: { type: string; coordinates: number[][][] | number[][][][] } | null;
+      }>;
+    };
     const positions: number[] = [];
     const r = GLOBE_RADIUS + 0.006;
 
